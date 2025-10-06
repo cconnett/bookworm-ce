@@ -1,0 +1,4 @@
+bazel-*
+*.o
+*.s
+bookworm.gba
