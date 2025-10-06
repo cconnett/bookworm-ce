@@ -84,14 +84,14 @@ void mcmc_word(char *out_word, int length) {
   random_word(out_word, &champion_factor, length);
   for (int i = 2; i < 12; i++) {
     char challenger[25];
-    unsigned int challenger_factor = 1;
+    unsigned int challenger_factor;
     random_word(challenger, &challenger_factor, length);
     // r / int_max_32 < a / (a+b) <=>
     // r(a+b) / int_max_32 < a <=>
     // (r(a+b) >> 31) < a
     unsigned long long r_a_b = random_int();
     r_a_b *= (challenger_factor + champion_factor * i);
-    if ((r_a_b >> 32) < challenger_factor) {
+    if ((r_a_b >> 31) < challenger_factor) {
       char *dst = out_word;
       char *src = challenger;
       while ((*dst++ = *src++));
