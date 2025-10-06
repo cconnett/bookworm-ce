@@ -8,7 +8,9 @@ import struct
 import sys
 from typing import List, Tuple
 
+import numpy as np
 import tqdm
+from scipy.stats import chisquare
 
 LEX = open("bookworm.gba", "rb").read()
 LEX = memoryview(LEX[0xF7C38:])
@@ -256,16 +258,76 @@ def encode_tree(tree, prefix=""):
     return this_section + rest
 
 
-if __name__ == "__main__":
-    print(len(LEX))
+def random_word(tree, length=5) -> Tuple[str, int]:
+    while True:
+        try:
+            current = tree
+            choice_factor = 1
+            word = []
+            for _ in range(length - 1):
+                branches = [
+                    (letter, subtree) for letter, subtree in current.items() if subtree
+                ]
+                letter, current = random.choice(branches)
+                choice_factor *= len(branches)
+                word.append(letter)
+            leaves = [
+                (letter, leaf) for letter, leaf in current.items() if leaf.is_word
+            ]
+            letter, leaf = random.choice(leaves)
+            word.append(letter)
+            return ("".join(word), choice_factor)
+        except IndexError:
+            continue
+
+
+def mcmc_word(tree, length=5):
+    champion, champ_factor = random_word(tree, length)
+    for i in range(2, 12):
+        challenger, challenger_factor = random_word(tree, length)
+        target = challenger_factor / (challenger_factor + champ_factor * i)
+        if random.random() < target:
+            champion = challenger
+            champ_factor = challenger_factor
+    return champion
+
+
+def do_chisquare_test():
     words = list(unpack_lexicon(LEX))
+    tree = make_tree(words)
+    print("Go")
+    dist = collections.Counter(word[0] for word in words if len(word) == 5)
+    obs = collections.Counter()
+    for seed in range(10000):
+        obs.update(mcmc_word(tree, 5)[0])
+
+    f_obs = np.array([obs[letter] for letter in string.ascii_uppercase])
+    f_exp = np.array([dist[letter] for letter in string.ascii_uppercase])
+    pprint.pprint(
+        list(zip(string.ascii_uppercase, f_obs / sum(f_obs), f_exp / sum(f_exp)))
+    )
+    print(
+        chisquare(
+            f_obs=f_obs / sum(f_obs),
+            f_exp=f_exp / sum(f_exp),
+        )
+    )
+
+
+if __name__ == "__main__":
     # print(len(words))
     # find_bugged_words()
     # random.seed(50)
-    # words = [w.strip() for w in open(sys.argv[1]).readlines()]
+    words = [w.strip() for w in open(sys.argv[1]).readlines()]
     # words = sorted(random.sample(words, 5000))
-    # words2 = list(unpack_lexicon(encode_tree(make_tree(words)), ""))
+    words = sorted(words)
+    data = encode_tree(make_tree(words))
+    logging.getLogger().setLevel(logging.DEBUG)
+    print(check_word(data, "QUALMH"))
+    # words2 = list(unpack_lexicon(data, ""))
+
     # if set(words) != set(words2):
     #    pprint.pprint(set(words) - set(words2))
     #    pprint.pprint(set(words2) - set(words))
-    # open("new_dict_final.dat", "wb").write(encode_tree(make_tree(words)))
+    open("new_dict_final.dat", "wb").write(data)
+    # do_chisquare_test()
