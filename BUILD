@@ -17,8 +17,21 @@ cc_binary(
         "-Wextra",
         "-std=c99",
     ],
-    data = ["new_dict_final.dat"],
+    data = [":new_trie"],
     deps = [":pick_word"],
+)
+
+genrule(
+    name = "new_trie",
+    srcs = ["curated_lists/bookworm-ce-1.0.txt"],
+    outs = ["new_dict.bwtrie"],
+    cmd = "$(location :decode_dict) $(location curated_lists/bookworm-ce-1.0.txt) $@",
+    tools = [":decode_dict"],
+)
+
+py_binary(
+    name = "decode_dict",
+    srcs = ["decode_dict.py"],
 )
 
 # ARM32 targets
@@ -32,7 +45,7 @@ cc_library(
         "-std=c99",
     ],
     target_compatible_with = [
-        "@platforms//cpu:armv7",
+        "@platforms//cpu:armv4t",
     ],
 )
 
@@ -45,38 +58,8 @@ cc_binary(
         "-std=c99",
     ],
     data = ["new_dict_final.dat"],
+    target_compatible_with = [
+        "@platforms//cpu:armv4t",
+    ],
     deps = [":pick_word_arm"],
-    target_compatible_with = [
-        "@platforms//cpu:armv7",
-    ],
-)
-
-# ARM64 targets
-cc_library(
-    name = "pick_word_arm64",
-    srcs = ["pick_word.c"],
-    hdrs = ["pick_word.h"],
-    copts = [
-        "-Wall",
-        "-Wextra",
-        "-std=c99",
-    ],
-    target_compatible_with = [
-        "@platforms//cpu:aarch64",
-    ],
-)
-
-cc_binary(
-    name = "test_pick_word_arm64",
-    srcs = ["test_pick_word.c"],
-    copts = [
-        "-Wall",
-        "-Wextra",
-        "-std=c99",
-    ],
-    data = ["new_dict_final.dat"],
-    deps = [":pick_word_arm64"],
-    target_compatible_with = [
-        "@platforms//cpu:aarch64",
-    ],
 )

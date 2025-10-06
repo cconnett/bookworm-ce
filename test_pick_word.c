@@ -8,7 +8,7 @@
 #include "pick_word.h"
 
 int main() {
-  FILE *romfile = fopen("new_dict_final.dat", "rb");
+  FILE *romfile = fopen("new_dict.bwtrie", "rb");
   char buf[20];
   unsigned char *ROM =
       mmap(NULL, 0x4000000, PROT_READ, MAP_PRIVATE, fileno(romfile), 0);

@@ -12,8 +12,11 @@ import numpy as np
 import tqdm
 from scipy.stats import chisquare
 
-LEX = open("bookworm.gba", "rb").read()
-LEX = memoryview(LEX[0xF7C38:])
+
+def get_lex():
+    LEX = open("bookworm.gba", "rb").read()
+    LEX = memoryview(LEX[0xF7C38:])
+    return LEX
 
 
 @dataclasses.dataclass
@@ -192,7 +195,7 @@ def find_bugged_words():
         for word in tqdm.tqdm(open_set):
             for ext in string.ascii_uppercase:
                 probe_word = word + ext
-                if probe_word not in full and check_word(LEX, probe_word):
+                if probe_word not in full and check_word(get_lex(), probe_word):
                     new.add(probe_word)
         full |= open_set
         full |= new
@@ -293,7 +296,7 @@ def mcmc_word(tree, length=5):
 
 
 def do_chisquare_test():
-    words = list(unpack_lexicon(LEX))
+    words = list(unpack_lexicon(get_lex()))
     tree = make_tree(words)
     print("Go")
     dist = collections.Counter(word[0] for word in words if len(word) == 5)
@@ -322,12 +325,12 @@ if __name__ == "__main__":
     # words = sorted(random.sample(words, 5000))
     words = sorted(words)
     data = encode_tree(make_tree(words))
-    logging.getLogger().setLevel(logging.DEBUG)
-    print(check_word(data, "QUALMH"))
+    # logging.getLogger().setLevel(logging.DEBUG)
+    # print(check_word(data, "QUALMH"))
     # words2 = list(unpack_lexicon(data, ""))
 
     # if set(words) != set(words2):
     #    pprint.pprint(set(words) - set(words2))
     #    pprint.pprint(set(words2) - set(words))
-    open("new_dict_final.dat", "wb").write(data)
+    open(sys.argv[2], "wb").write(data)
     # do_chisquare_test()
