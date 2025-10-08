@@ -5,7 +5,7 @@ cc_library(
     copts = [
         "-Wall",
         "-Wextra",
-        "-std=c99",
+        "-std=c2x",
     ],
 )
 
@@ -15,7 +15,7 @@ cc_binary(
     copts = [
         "-Wall",
         "-Wextra",
-        "-std=c99",
+        "-std=c2x",
     ],
     data = [":new_trie"],
     deps = [":pick_word"],
@@ -42,10 +42,10 @@ cc_library(
     copts = [
         "-Wall",
         "-Wextra",
-        "-std=c99",
+        "-std=c2x",
     ],
     target_compatible_with = [
-        "@platforms//cpu:armv4t",
+        "//platforms:armv4t",
     ],
 )
 
@@ -55,11 +55,11 @@ cc_binary(
     copts = [
         "-Wall",
         "-Wextra",
-        "-std=c99",
+        "-std=c2x",
     ],
     data = ["new_dict_final.dat"],
     target_compatible_with = [
-        "@platforms//cpu:armv4t",
+        "//platforms:armv4t",
     ],
     deps = [":pick_word_arm"],
 )
