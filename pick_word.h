@@ -2,11 +2,9 @@
 #define _PICK_WORD_H
 
 typedef int prng_func_t(void);
-#ifdef GBA
 extern prng_func_t *random_int;
-#else
+#ifndef __arm__
 #include <stdlib.h>
-extern prng_func_t *random_int;
 #endif
 
 typedef struct __attribute__((packed)) {
@@ -27,7 +25,7 @@ typedef struct __attribute__((packed)) {
   unsigned short jump;
 } Level1Entry;
 
-#ifdef GBA
+#ifdef __arm__
 #define LEXICON ((Trie *)0x080f7c38)
 #else
 extern Trie *LEXICON;

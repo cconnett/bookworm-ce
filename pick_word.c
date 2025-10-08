@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#ifdef GBA
-prng_func_t *random_int = (prng_func_t *)0x0801bead;
+#ifdef __arm__
+#define random_int ((prng_func_t *)0x0801bead)
 #else
 prng_func_t *random_int = rand;
 Trie *LEXICON;
