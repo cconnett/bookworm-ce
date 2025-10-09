@@ -8,7 +8,7 @@ pass
 
 rom = bytearray(open(sys.argv[1], "rb").read())
 
-# Read from lib_pickword.a
+# Read from pick_word.o
 libpick_word = open(sys.argv[3], "rb").read()
 rodata = libpick_word[0x2A8 : 0x2A8 + 0x6C]
 text_offset = 0x34
