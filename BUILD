@@ -23,9 +23,9 @@ cc_binary(
 
 genrule(
     name = "new_trie",
-    srcs = ["curated_lists/bookworm-ce-1.0.txt"],
+    srcs = ["curated_lists/bookworm-ce-1.1.txt"],
     outs = ["new_dict.bwtrie"],
-    cmd = "$(location :decode_dict) $(location curated_lists/bookworm-ce-1.0.txt) $@",
+    cmd = "$(location :decode_dict) $(location curated_lists/bookworm-ce-1.1.txt) $@",
     tools = [":decode_dict"],
 )
 
