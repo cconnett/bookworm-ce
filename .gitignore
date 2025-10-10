@@ -1,4 +1,5 @@
 bazel-*
 *.o
 *.s
-bookworm.gba
+*.gba
+.bazel_fix_commands.json
