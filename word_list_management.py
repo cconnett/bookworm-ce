@@ -61,12 +61,13 @@ def read_word_list(filename, *, verbose=False):
                 warnings.warn(f"{os.path.basename(filename)}: {word!r} is duplicated.")
                 continue
             words.add(word)
-        print(
-            f"{os.path.basename(filename)}: {len(words)} words; excluded\n"
-            f"\t{short_count} too short words and\n"
-            f"\t{long_count} too long words and\n"
-            f"\t{naked_qs} naked Q words."
-        )
+        if short_count or long_count or naked_qs:
+            print(
+                f"{os.path.basename(filename)}: {len(words)} words; excluded\n"
+                f"\t{short_count} too short words and\n"
+                f"\t{long_count} too long words and\n"
+                f"\t{naked_qs} naked Q words."
+            )
         return words
 
 
