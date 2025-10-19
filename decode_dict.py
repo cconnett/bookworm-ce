@@ -12,11 +12,22 @@ import numpy as np
 import tqdm
 from scipy.stats import chisquare
 
+letter_values = dict(
+    zip(
+        string.ascii_uppercase,
+        [1, 4, 4, 3, 1, 5, 3, 5, 1, 8, 7, 2, 4, 2, 1, 4, 7, 2, 1, 2, 2, 5, 6, 8, 6, 10],
+    )
+)
+
 
 def get_lex():
     LEX = open("bookworm.gba", "rb").read()
     LEX = memoryview(LEX[0xF7C38:])
     return LEX
+
+
+def letter_score(word):
+    return sum(letter_values[letter] for letter in word)
 
 
 @dataclasses.dataclass
@@ -105,7 +116,6 @@ def check_word(data, word):
                     if tab3.is_last:
                         break
             logging.debug(f"Discarded nested lists. {fmtvec(lex_ref_2)}")
-
         i += 1
         rest = rest[1:]
 
