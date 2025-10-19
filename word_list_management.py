@@ -33,7 +33,10 @@ def read_word_list(filename, *, verbose=False):
                 print(*args)
 
         for line in file:
-            word = line.strip().casefold().upper()
+            word = line.split("#")[0]
+            word = word.strip().casefold().upper()
+            if not word:
+                continue
             if not word.isalpha():
                 warnings.warn(
                     f"{os.path.basename(filename)}: {word!r} "
