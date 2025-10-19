@@ -26,7 +26,6 @@ int main(int argc, char **argv) {
     return 1;
   }
   int hist[26] = {0};
-  unsigned int unused_factor;
   for (int i = 0; i < 1000000; i++) {
     srand(i);
     mcmc_word(buf, 5);
