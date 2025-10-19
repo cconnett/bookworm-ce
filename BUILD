@@ -34,6 +34,17 @@ py_binary(
     srcs = ["decode_dict.py"],
 )
 
+py_library(
+    name = "word_list_management_lib",
+    deps = [":decode_dict_lib"],
+    srcs = ["word_list_management.py"],
+)
+py_binary(
+    name = "word_list_management",
+    deps = [":word_list_management_lib"],
+    srcs = ["word_list_management.py"],
+)
+
 # ARM32 targets
 cc_library(
     name = "pick_word_arm",
