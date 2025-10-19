@@ -59,18 +59,3 @@ cc_library(
         "//platforms:armv4t",
     ],
 )
-
-cc_binary(
-    name = "test_pick_word_arm",
-    srcs = ["test_pick_word.c"],
-    copts = [
-        "-Wall",
-        "-Wextra",
-        "-std=c2x",
-    ],
-    data = ["new_dict_final.dat"],
-    target_compatible_with = [
-        "//platforms:armv4t",
-    ],
-    deps = [":pick_word_arm"],
-)
