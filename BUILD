@@ -23,14 +23,14 @@ cc_binary(
 
 genrule(
     name = "new_trie",
-    srcs = ["curated_lists/bookworm-ce-1.1.txt"],
+    srcs = glob(["word_lists/*.txt"]),
     outs = ["new_dict.bwtrie"],
-    cmd = "$(location :decode_dict) $(location curated_lists/bookworm-ce-1.1.txt) $@",
-    tools = [":decode_dict"],
+    cmd = "$(location :word_list_management) $(SRCS) $@",
+    tools = [":word_list_management"],
 )
 
-py_binary(
-    name = "decode_dict",
+py_library(
+    name = "decode_dict_lib",
     srcs = ["decode_dict.py"],
 )
 

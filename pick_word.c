@@ -27,6 +27,8 @@ restart:
   int expanded_length = length;
   for (int level = 0; level < expanded_length; level++) {
     int branches = 0;
+    int to_skip = 0;
+    int uncashed = 0;
     Trie *i = current;
 
     bool continuing;
@@ -35,7 +37,10 @@ restart:
           (level == expanded_length - 1 && i->is_word)) {
         if (random_int() <= RECIPROCAL_INT_MAX[branches++]) {
           current = i;
+          to_skip += uncashed;
+          uncashed = 0;
         }
+        uncashed++;
       }
       continuing = i->list_continues;
       if (level == 0) {
@@ -63,7 +68,7 @@ restart:
     } else if (level < 4) {
       current += 3 + ((Level1Entry *)current)->jump;
     } else {
-      int nested_list_depth = branches;
+      int nested_list_depth = to_skip;
       current = i;
       while (nested_list_depth--) {
         do {
