@@ -11,7 +11,7 @@ rom = bytearray(open(sys.argv[1], "rb").read())
 LEXICON_ADDRESS = 0xF7C38
 LEXICON_DEFAULT_BOUNDARY = 0x14FFA0
 LEXICON_EXPANSION_ADDRESS = 0x3DBEB4
-LEXICON_EXPANSION_BOUNDARY = 0x3E0000
+LEXICON_EXPANSION_BOUNDARY = 0x3DFFF0
 
 trie = open(sys.argv[3], "rb").read()
 # Assume all 26 letters are present in the top level.
