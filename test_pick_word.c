@@ -26,13 +26,10 @@ int main(int argc, char **argv) {
     return 1;
   }
   int hist[26] = {0};
-  for (int i = 0; i < 1000000; i++) {
+  for (int i = 0; i < 100000; i++) {
     srand(i);
-    mcmc_word(buf, 5);
+    mcmc_word(buf, 6);
     // random_word(buf, &unused_factor, 5);
-    if (strcmp(buf, "SACQUM") == 0) {
-      printf("%d: %s\n", i, buf);
-    }
     // printf("%s\n", buf);
     hist[buf[0] - 'A']++;
   }
