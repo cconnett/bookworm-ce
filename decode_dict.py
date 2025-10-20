@@ -1,6 +1,7 @@
 import collections
 import dataclasses
 import logging
+import math
 import pprint
 import random
 import string
@@ -305,24 +306,26 @@ def mcmc_word(tree, length=5):
     return champion
 
 
-def do_chisquare_test():
+def KL_divergence():
     words = list(unpack_lexicon(get_lex()))
     tree = make_tree(words)
     print("Go")
-    dist = collections.Counter(word[0] for word in words if len(word) == 5)
+    dist = collections.Counter(word for word in words if len(word) == 5)
     obs = collections.Counter()
-    for seed in range(10000):
-        obs.update(mcmc_word(tree, 5)[0])
+    for seed in tqdm.trange(200000):
+        obs[mcmc_word(tree, 5)] += 1
 
-    f_obs = np.array([obs[letter] for letter in string.ascii_uppercase])
-    f_exp = np.array([dist[letter] for letter in string.ascii_uppercase])
+    c_exp = np.array([dist[word] for word in sorted(dist.keys())], dtype=float)
+    c_obs = np.array([obs[word] for word in sorted(dist.keys())], dtype=float)
+    # pprint.pprint(list(zip(string.ascii_uppercase, obs / sum(obs), exp / sum(exp))))
+    c_exp += 0.1
+    c_obs += 0.1
+    p = c_obs / sum(c_obs)
+    q = c_exp / sum(c_exp)
     pprint.pprint(
-        list(zip(string.ascii_uppercase, f_obs / sum(f_obs), f_exp / sum(f_exp)))
-    )
-    print(
-        chisquare(
-            f_obs=f_obs / sum(f_obs),
-            f_exp=f_exp / sum(f_exp),
+        sum(
+            p_x * math.log2(p_x / q_x)
+            for l, p_x, q_x in zip(string.ascii_uppercase, q, p)
         )
     )
 
@@ -331,10 +334,10 @@ if __name__ == "__main__":
     # print(len(words))
     # find_bugged_words()
     # random.seed(50)
-    words = [w.strip() for w in open(sys.argv[1]).readlines()]
+    # words = [w.strip() for w in open(sys.argv[1]).readlines()]
     # words = sorted(random.sample(words, 5000))
-    words = sorted(words)
-    data = encode_tree(make_tree(words))
+    # words = sorted(words)
+    # data = encode_tree(make_tree(words))
     # logging.getLogger().setLevel(logging.DEBUG)
     # print(check_word(data, "QUALMH"))
     # words2 = list(unpack_lexicon(data, ""))
@@ -342,5 +345,5 @@ if __name__ == "__main__":
     # if set(words) != set(words2):
     #    pprint.pprint(set(words) - set(words2))
     #    pprint.pprint(set(words2) - set(words))
-    open(sys.argv[2], "wb").write(data)
-    # do_chisquare_test()
+    # open(sys.argv[2], "wb").write(data)
+    KL_divergence()
