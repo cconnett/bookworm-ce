@@ -334,14 +334,14 @@ def mcmc_word(tree, length=5):
     return champion
 
 
-def KL_divergence():
+def KL_divergence(length):
     words = list(unpack_lexicon(get_lex()))
     tree = make_tree(words)
     print("Go")
-    dist = collections.Counter(word for word in words if len(word) == 5)
+    dist = collections.Counter(word for word in words if len(word) == length)
     obs = collections.Counter()
     for seed in tqdm.trange(200000):
-        obs[mcmc_word(tree, 5)] += 1
+        obs[mcmc_word(tree, length)] += 1
 
     c_exp = np.array([dist[word] for word in sorted(dist.keys())], dtype=float)
     c_obs = np.array([obs[word] for word in sorted(dist.keys())], dtype=float)
@@ -374,4 +374,4 @@ if __name__ == "__main__":
     #    pprint.pprint(set(words) - set(words2))
     #    pprint.pprint(set(words2) - set(words))
     # open(sys.argv[2], "wb").write(data)
-    KL_divergence()
+    KL_divergence(6)
