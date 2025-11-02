@@ -85,5 +85,5 @@ if __name__ == "__main__":
     words = set()
     for filename in sys.argv[1:-1]:
         words.update(read_word_dir(filename))
-    data = decode_dict.encode_tree(decode_dict.make_tree(words))
+    data = decode_dict.encode_tree(decode_dict.make_tree(sorted(words)))
     open(sys.argv[-1], "wb").write(data)

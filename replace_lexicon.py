@@ -11,7 +11,7 @@ rom = bytearray(open(sys.argv[1], "rb").read())
 LEXICON_ADDRESS = 0xF7C38
 LEXICON_DEFAULT_BOUNDARY = 0x14FFA0
 LEXICON_EXPANSION_ADDRESS = 0x3DBEB4
-LEXICON_EXPANSION_BOUNDARY = 0x3DFFF0
+LEXICON_EXPANSION_BOUNDARY = 0x3EFFF0
 
 trie = open(sys.argv[3], "rb").read()
 # Assume all 26 letters are present in the top level.
@@ -21,6 +21,7 @@ section_starts = {
         struct.iter_unpack("<BHB", trie[: 26 * 4])
     )
 }
+
 section_ranges = {
     letter: (section_starts[letter], section_starts[chr(ord(letter) + 1)])
     for letter in list(section_starts.keys())[:-1]

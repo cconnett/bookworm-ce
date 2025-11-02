@@ -1,6 +1,8 @@
+import os.path
 import struct
 import subprocess
 import sys
+import tempfile
 
 if len(sys.argv) != 4:
     print(f"Usage: sys.argv[0] infile outfile code.o")
@@ -9,13 +11,25 @@ pass
 
 rom = bytearray(open(sys.argv[1], "rb").read())
 
-# 0. Read from object file
-libpick_word = open(sys.argv[3], "rb").read()
+# 0. Read from object file.
+match os.path.splitext(sys.argv[3])[1]:
+    case ".a":
+        ar_t = subprocess.run(["ar", "t", sys.argv[3]], capture_output=True)
+        ar_t.check_returncode()
+        o_filename = ar_t.stdout.decode().split("\n")[0]
+        ar_p = subprocess.run(["ar", "p", sys.argv[3], o_filename], capture_output=True)
+        ar_p.check_returncode()
+        libpick_word = ar_p.stdout
+    case ".o":
+        libpick_word = open(sys.argv[3], "rb").read()
+    case _:
+        printf("Code must be .a or .o.")
+        sys.exit(2)
 
 
-def run_readelf(mode):
+def run_readelf(mode, filename):
     proc = subprocess.run(
-        ["arm-none-eabi-readelf", f"-{mode}", sys.argv[3]],
+        ["arm-none-eabi-readelf", f"-{mode}", filename],
         capture_output=True,
         encoding="utf-8",
     )
@@ -23,34 +37,39 @@ def run_readelf(mode):
     return proc.stdout.split("\n")
 
 
-section_headers = run_readelf("S")[4:]
-relocation_entries = run_readelf("r")[5:]
-symbol_table = run_readelf("s")[5:]
+with tempfile.NamedTemporaryFile(suffix=".o") as pick_word_o:
+    pick_word_o.write(libpick_word)
+    pick_word_o.flush()
+    section_headers = run_readelf("S", pick_word_o.name)[4:]
+    relocation_entries = run_readelf("r", pick_word_o.name)[5:]
+    symbol_table = run_readelf("s", pick_word_o.name)[5:]
 
-sections = {
-    name: (int(offset, base=16), int(size, base=16))
-    for name, type_, addr, offset, size, _ in (
-        line[7:].split(maxsplit=5) for line in section_headers if line.startswith("  [")
-    )
-}
+    sections = {
+        name: (int(offset, base=16), int(size, base=16))
+        for name, type_, addr, offset, size, _ in (
+            line[7:].split(maxsplit=5)
+            for line in section_headers
+            if line.startswith("  [")
+        )
+    }
 
-relocation_entries = [
-    (int(offset, base=16), type_, int(value), name)
-    for offset, info, type_, value, name in (
-        line.split() for line in relocation_entries if len(line.split()) == 5
-    )
-]
+    relocation_entries = [
+        (int(offset, base=16), type_, int(value), name)
+        for offset, info, type_, value, name in (
+            line.split() for line in relocation_entries if len(line.split()) == 5
+        )
+    ]
 
-symbols = {
-    name: (int(value, base=16), int(size), type_)
-    for (num, value, size, type_, _, _, _, name) in (
-        line.split() for line in symbol_table if len(line.split()) == 8
-    )
-}
+    symbols = {
+        name: (int(value, base=16), int(size), type_)
+        for (num, value, size, type_, _, _, _, name) in (
+            line.split() for line in symbol_table if len(line.split()) == 8
+        )
+    }
 
 
 GBA_ROM_DOMAIN = 0x08000000
-TARGET_BASE = 0x3E0000
+TARGET_BASE = 0x3F0000
 next_placement = TARGET_BASE
 
 # 1. Place rodata.
