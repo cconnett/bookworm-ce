@@ -7,9 +7,6 @@ cc_library(
         "-Wextra",
         "-std=c2x",
     ],
-    target_compatible_with = [
-        "//platforms:armv4t",
-    ],
 )
 
 cc_binary(
