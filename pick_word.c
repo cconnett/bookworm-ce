@@ -20,62 +20,71 @@ static const int RECIPROCAL_INT_MAX[] = {
 
 void random_word(char *out_word, unsigned int *out_factor, const int length) {
 restart:
-  Trie *current = LEXICON;
+  Trie *start_of_level = LEXICON;
   char *word = out_word;
   *out_factor = 1;
   *word = '\0';
   int expanded_length = length;
+  Trie *champion;
   for (int level = 0; level < expanded_length; level++) {
+    champion = start_of_level;
     int branches = 0;
     int to_skip = 0;
-    int uncashed = 0;
-    Trie *i = current;
 
-    bool continuing;
-    do {
-      if ((level < expanded_length - 1 && i->is_prefix) ||
-          (level == expanded_length - 1 && i->is_word)) {
-        if (random_int() <= RECIPROCAL_INT_MAX[branches++]) {
-          current = i;
-          to_skip += uncashed;
-          uncashed = 0;
+    {
+      Trie *point = start_of_level;
+      int uncashed = 0;
+      bool continuing;
+      do {
+        if ((level < expanded_length - 1 && point->is_prefix) ||
+            (level == expanded_length - 1 && point->is_word)) {
+          if (random_int() <= RECIPROCAL_INT_MAX[branches++]) {
+            champion = point;
+            to_skip += uncashed;
+            uncashed = 0;
+          }
+          uncashed++;
         }
-        uncashed++;
-      }
-      continuing = i->list_continues;
-      if (level == 0) {
-        i += 4;
-      } else if (level < 4) {
-        i += 3;
-      } else {
-        i++;
-      }
-    } while (continuing);
-
+        continuing = point->list_continues;
+        if (level == 0) {
+          point += 4;
+        } else if (level < 4) {
+          point += 3;
+        } else {
+          point++;
+        }
+      } while (continuing);
+    }
     *out_factor *= branches;
-    *word++ = (current->letter_index) + 'A';
+    *word++ = (champion->letter_index) + 'A';
     *word = '\0';
-    if (current->letter_index == ('Q' - 'A')) {
+    if (champion->letter_index == ('Q' - 'A')) {
       expanded_length += 1;
     }
     if (branches <= 0) {
       goto restart;
     }
 
+    // Advance to start of next level.
+    Trie *point = champion;
     if (level == 0) {
-      current += 4 + ((Level0Entry *)current)->jump_lo +
-                 (((Level0Entry *)current)->jump_hi << 16);
+      point += 4 + ((Level0Entry *)champion)->jump_lo +
+               (((Level0Entry *)champion)->jump_hi << 16);
     } else if (level < 4) {
-      current += 3 + ((Level1Entry *)current)->jump;
+      point += 3 + ((Level1Entry *)champion)->jump;
     } else {
+      // Discard the rest of the current level,
+      while (point++->list_continues);
+
+      // and then skip the requisite number of nested sublists.
       int nested_list_depth = to_skip;
-      current = i;
       while (nested_list_depth--) {
         do {
-          nested_list_depth += current++->is_prefix;
-        } while (current->list_continues);
+          nested_list_depth += point->is_prefix;
+        } while (point++->list_continues);
       }
     }
+    start_of_level = point;
   }
   if ((out_word[0] == 'R' && out_word[1] == 'A' && out_word[2] == 'P' &&
        out_word[3] == 'E') ||
