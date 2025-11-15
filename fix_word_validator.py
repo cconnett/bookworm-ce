@@ -57,6 +57,9 @@ rom[LETTER_FREQ_TABLE_ADDR : LETTER_FREQ_TABLE_ADDR + 26 * 4] = struct.pack(
     "<26I", *new_letter_frequency_table
 )
 
+# Remove prohibition on repeated random letters.
+rom[0x5894:0x5898] = b"\x04\x00\x00\xea"  # Unconditional jump over the retry.
+
 # Shift final score down by one more bit, dividing by two. Then we'll apply the
 # new score table.
 rom[0x4D70] = 0x22
