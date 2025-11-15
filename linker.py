@@ -41,7 +41,7 @@ for obj_filename in sys.argv[3:]:
         case ".o":
             libpick_word = open(obj_filename, "rb").read()
         case _:
-            printf("Code must be .a or .o.")
+            print("Code must be .a or .o.")
             sys.exit(2)
 
     with tempfile.NamedTemporaryFile(suffix=".o") as o_file:
@@ -91,8 +91,8 @@ for obj_filename in sys.argv[3:]:
         if type_ == "FUNC":
             func_offset = text_start + text_offset
             func_text = libpick_word[func_offset : func_offset + size]
-            print(name)
-            print(" ".join(f"{b:02X}" for b in func_text))
+            # print(name)
+            # print(" ".join(f"{b:02X}" for b in func_text))
             rom[next_placement : next_placement + size] = func_text
             placements[name] = next_placement
             next_placement += size
