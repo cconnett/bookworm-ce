@@ -1,8 +1,6 @@
 import struct
 import sys
 
-RETURN = b"\x1e\xff\x2f\xe1"  # bx lr
-
 if len(sys.argv) != 3:
     print(f"Usage: {sys.argv[0]} infile outfile")
     sys.exit(2)
@@ -10,12 +8,19 @@ if len(sys.argv) != 3:
 rom = bytearray(open(sys.argv[1], "rb").read())
 initial_size = len(rom)
 # Remove shuffle suggestion nag box.
-rom[0x7844:0x7848] = RETURN
+rom[0x7844:0x7848] = b"\x1e\xff\x2f\xe1"  # bx lr
 
 # Hotfix for missing check in ValidateWordImpl.
-rom[0x12C94:0x12CA0] = b"\x40\x00\x11\xe2" b"\xf6\xff\xff\x0a" b"\xd3\x74\x0f\xea"
+rom[0x12C94:0x12CA0] = (
+    b"\x40\x00\x11\xe2"  # ands r0, r1, #0x40
+    b"\xf6\xff\xff\x0a"  # beq ValidateWordReturn
+    b"\xd3\x74\x0f\xea"  # b 0x083EFFF0
+)
 rom[0x3EFFF0:0x3F0000] = (
-    b"\x06\xcc\xa0\xe1" b"\x4c\x3c\xa0\xe1" b"\x03\x00\x53\xe3" b"\x27\x8b\xf0\xea"
+    b"\x06\xcc\xa0\xe1"  # mov r12, r1, lsr #6
+    b"\x4c\x3c\xa0\xe1"  # and r0, 12, #1
+    b"\x03\x00\x53\xe3"  # cmp r0, #0
+    b"\x27\x8b\xf0\xea"  # b ValidateWordReturn
 )
 
 new_letter_frequency_table = [
