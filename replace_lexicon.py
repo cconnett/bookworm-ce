@@ -34,7 +34,7 @@ boundary_address = LEXICON_DEFAULT_BOUNDARY
 in_expansion = False
 for i, (letter, (start, end)) in enumerate(section_ranges.items()):
     segment = trie[start:end]
-    if segment_address + len(segment) >= boundary_address:
+    if segment_address + len(segment) > boundary_address:
         if in_expansion:
             raise ValueError("Out of space")
         in_expansion = True

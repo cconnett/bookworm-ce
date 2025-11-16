@@ -57,7 +57,7 @@ boundary_address = AUDIO_TABLE_ADDRESS + 459243  # Base audio data segment size
 in_expansion = False
 
 for i, (samples, sample_rate) in enumerate(clips):
-    if clip_address + len(samples) >= boundary_address:
+    if clip_address + len(samples) > boundary_address:
         print(clip_address + len(samples), boundary_address)
         if in_expansion:
             raise ValueError("Out of space")
