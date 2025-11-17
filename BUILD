@@ -22,6 +22,20 @@ cc_binary(
 )
 
 cc_library(
+    name = "scoring",
+    srcs = ["scoring.c"],
+    hdrs = ["scoring.h"],
+    copts = [
+        "-Wall",
+        "-Wextra",
+        "-std=c2x",
+    ],
+    target_compatible_with = [
+        "//platforms:armv4t",
+    ],
+)
+
+cc_library(
     name = "check_special_words",
     srcs = ["check_special_words.c"],
     hdrs = ["check_special_words.h"],
@@ -45,10 +59,10 @@ genrule(
 
 genrule(
     name = "bookworm-ce",
-    srcs = ["3.gba", ":pick_word", ":check_special_words"],
+    srcs = ["3.gba", ":pick_word", ":check_special_words", ":scoring"],
     outs = ["bookworm-ce.gba"],
     tools = [":linker"],
-    cmd = "$(location :linker) $(location :3.gba) $@ $(location :pick_word) $(location :check_special_words)",
+    cmd = "$(location :linker) $(location :3.gba) $@ $(location :pick_word) $(location :check_special_words) $(location :scoring)",
 )
 
 genrule(

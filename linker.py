@@ -125,5 +125,11 @@ rom[0xB948:0xB94C] = struct.pack(
     "<I", 0xEB000000 + (placements["check_special_words"] - 8 - 0xB948) // 4
 )
 
+# Redirect original CalculateScore to new CalculateScore.
+print(hex(placements["CalculateScore"]))
+rom[0x4C5C:0x4C60] = struct.pack(
+    "<I", 0xEA000000 + (placements["CalculateScore"] - 8 - 0x4C5C) // 4
+)
+
 assert len(rom) == 0x400000, hex(len(rom))
 open(sys.argv[2], "wb").write(rom)

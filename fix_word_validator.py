@@ -57,43 +57,5 @@ rom[LETTER_FREQ_TABLE_ADDR : LETTER_FREQ_TABLE_ADDR + 26 * 4] = struct.pack(
     "<26I", *new_letter_frequency_table
 )
 
-# Shift final score down by one more bit, dividing by two. Then we'll apply the
-# new score table.
-rom[0x4D70] = 0x22
-new_letter_score_table = [
-    2,
-    8,
-    5,
-    5,
-    2,
-    11,
-    6,
-    7,
-    2,
-    24,
-    12,
-    4,
-    8,
-    3,
-    3,
-    6,
-    29,
-    3,
-    3,
-    3,
-    5,
-    15,
-    14,
-    24,
-    9,
-    24,
-]
-# Apply new score table.
-LETTER_SCORE_TABLE_ADDR = 0xF7500
-rom[LETTER_SCORE_TABLE_ADDR : LETTER_SCORE_TABLE_ADDR + 26 * 2] = struct.pack(
-    "<26H", *new_letter_score_table
-)
-
-
 assert len(rom) == initial_size, "ROM size changed!"
 open(sys.argv[2], "wb").write(rom)
