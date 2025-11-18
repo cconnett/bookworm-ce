@@ -61,7 +61,7 @@ for obj_filename in sys.argv[3:]:
     }
 
     relocation_entries = [
-        (int(offset, base=16), type_, int(value), name)
+        (int(offset, base=16), type_, int(value, base=16), name)
         for offset, info, type_, value, name in (
             line.split() for line in relocation_output if len(line.split()) == 5
         )
