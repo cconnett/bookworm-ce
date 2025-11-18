@@ -110,26 +110,41 @@ for obj_filename in sys.argv[3:]:
                 assert relative_jump.bit_length() <= 24
                 argument = struct.pack("<i", relative_jump // 4)[:-1]
                 rom[reference : reference + 4] = argument + b"\xeb"
+            case "R_ARM_JUMP24":
+                relative_jump = placements[target] - 8 - reference
+                assert relative_jump.bit_length() <= 24
+                argument = struct.pack("<i", relative_jump // 4)[:-1]
+                rom[reference : reference + 4] = argument + b"\xea"
 
-# Edit original pick_bonus_word function to call our new mcmc_word.
-rom[0x5988:0x5998] = struct.pack(
-    "<IIII",
-    0xE1A00005,  # mov r5, r0
-    0xE1A01004,  # mov r4, r1
-    0xE1A00000,  # mov r0, r0 (nop)
-    0xEB000000 + (placements["mcmc_word"] - 8 - 0x5994) // 4,  # bl mcmc_word
+    print(relocation_entries)
+
+# Edit original submit_selection function to put BonusScore return value in correct
+# register.
+rom[0xBA48:0xBA50] = struct.pack(
+    "<II",
+    0xE1A05000,  # mov r5, r0
+    0xE3A00001,  # mov r0, #1
 )
 
-# Replace strcmp call in submit_selection with our new checker.
-rom[0xB948:0xB94C] = struct.pack(
-    "<I", 0xEB000000 + (placements["check_special_words"] - 8 - 0xB948) // 4
-)
+# Whether to link return address. Heuristic for choosing: BL at the call site to replace
+# one call; B at the start of the old function to replace the whole function.
+BL = 0xEB000000
+B = 0xEA000000
+# Replace function calls with new functions.
+call_subs = [
+    (0x4C5C, "CalculateScore", B),
+    (0x5918, "pick_bonus_word", B),
+    (0xB948, "check_special_words", BL),
+    (0xBA44, "BonusScore", BL),
+]
+for k, v in placements.items():
+    print(f"{k:20s}: {hex(v)}")
+print(relocation_entries)
+for addr, new_func, branch_instr in call_subs:
+    rom[addr : addr + 4] = struct.pack(
+        "<I", branch_instr + (placements[new_func] - 8 - addr) // 4
+    )
 
-# Redirect original CalculateScore to new CalculateScore.
-print(hex(placements["CalculateScore"]))
-rom[0x4C5C:0x4C60] = struct.pack(
-    "<I", 0xEA000000 + (placements["CalculateScore"] - 8 - 0x4C5C) // 4
-)
 
 assert len(rom) == 0x400000, hex(len(rom))
 open(sys.argv[2], "wb").write(rom)
