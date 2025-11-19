@@ -102,8 +102,9 @@ for obj_filename in sys.argv[3:]:
         reference = placements[".text"] + offset
         match type_:
             case "R_ARM_ABS32":
+                addend = struct.unpack("<i", rom[reference : reference + 4])[0]
                 rom[reference : reference + 4] = struct.pack(
-                    "<I", GBA_ROM_DOMAIN + placements[target]
+                    "<I", GBA_ROM_DOMAIN + placements[target] + addend
                 )
             case "R_ARM_CALL":
                 relative_jump = placements[target] - 8 - reference
@@ -116,7 +117,6 @@ for obj_filename in sys.argv[3:]:
                 argument = struct.pack("<i", relative_jump // 4)[:-1]
                 rom[reference : reference + 4] = argument + b"\xea"
 
-    print(relocation_entries)
 
 # Edit original submit_selection function to put BonusScore return value in correct
 # register.
@@ -136,10 +136,12 @@ call_subs = [
     (0x5918, "pick_bonus_word", B),
     (0xB948, "check_special_words", BL),
     (0xBA44, "BonusScore", BL),
+    (0xFC6C, "draw_bonus_word", BL),
 ]
-for k, v in placements.items():
-    print(f"{k:20s}: {hex(v)}")
-print(relocation_entries)
+
+## for k, v in placements.items():
+##     print(f"{k:20s}: {hex(v)}")
+
 for addr, new_func, branch_instr in call_subs:
     rom[addr : addr + 4] = struct.pack(
         "<I", branch_instr + (placements[new_func] - 8 - addr) // 4

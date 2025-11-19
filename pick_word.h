@@ -25,6 +25,12 @@ typedef struct __attribute__((packed)) {
   unsigned short jump;
 } Level1Entry;
 
+typedef struct __attribute__((packed)) {
+  char unused_pad[0x14];
+  char letter;
+  char unused_pad2[4];
+} tile;
+
 #ifdef __arm__
 #define LEXICON ((Trie *)0x080f7c38)
 #else

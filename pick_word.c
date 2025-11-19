@@ -113,3 +113,84 @@ void mcmc_word(char *out_word, int length) {
     }
   }
 }
+
+static const int BETA_BINOMIAL_PMF_TABLE[][4] = {
+    {2133568291, 13546466, 360511, 8275},
+    {1693596349, 404312526, 46561153, 2931063},
+    {1361415660, 641378044, 130654915, 13451031},
+    {1106831423, 778647122, 227565901, 32530733},
+    {909072383, 850776313, 323981109, 59272610},
+    {753574460, 880366354, 413204208, 92124217},
+    {629948414, 882327746, 492253496, 129438461},
+    {530666415, 866586678, 560206356, 169714975},
+    {450195750, 839793723, 617248387, 211685841},
+    {384416738, 806420890, 664126623, 254327835},
+    {330224918, 769476476, 701837012, 296842540},
+    {285254929, 730977076, 731448674, 338624763},
+    {247686069, 692262905, 754008289, 379229087},
+    {216103560, 654210650, 770491317, 418338892},
+    {189398336, 617378446, 781780352, 455739497},
+    {166693817, 582105393, 788658919, 491295720},
+    {147291850, 548580309, 791813740, 524933568},
+    {130632373, 516889489, 791841349, 556625525},
+    {116263070, 487049989, 789256652, 586378876},
+    {103816315, 459032900, 784502033, 614226510},
+    {92991527, 432779611, 777956252, 640219735}};
+
+int pick_length(int bonus_words_completed) {
+  int roll = random_int();
+  int k = bonus_words_completed > 20 ? 20 : bonus_words_completed;
+  k = k < 0 ? 0 : k;
+  int length;
+  for (length = 3; length < 7 && roll >= BETA_BINOMIAL_PMF_TABLE[k][length - 3];
+       roll -= BETA_BINOMIAL_PMF_TABLE[k][length++ - 3]);
+  //*((int *)0x03002af4) = 1;
+  return length;
+}
+
+#define bonus_word_scratch ((char *)0x030040ae)
+#define bonus_words_completed_g ((short *)0x030040ac)
+
+void pick_bonus_word() {
+  int length = pick_length(*bonus_words_completed_g);
+  mcmc_word(bonus_word_scratch, length);
+  *bonus_words_completed_g += 1;
+}
+
+#define string_render_width ((int (*)(char *))0x08018454)
+#define render_text ((void (*)(void *, short, short, char *))0x08018870)
+#define active_bonus_word ((char *)0x030040bb)
+#define active_font ((short *)0x030051dc)
+#define tile_selection ((tile **)0x03004018)
+#define num_selected_tiles ((int *)0x03004e9c)
+
+void draw_bonus_word() {
+  int to_highlight = 0;
+  {
+    char *bonus = active_bonus_word;
+    tile **selected_tile = tile_selection;
+    for (; *bonus && selected_tile < tile_selection + *num_selected_tiles;
+         bonus++, to_highlight++, selected_tile++) {
+      if (*bonus != (*selected_tile)->letter) {
+        to_highlight = 0;
+        break;
+      }
+      if (*bonus == 'Q') {
+        bonus++;
+        to_highlight++;
+      }
+    }
+  }
+
+  *active_font = 8;  // Bonus, highlighted
+  int x_pos = 0x34 - string_render_width(active_bonus_word) / 2;
+  char buf[2] = {0, 0};
+  for (char *bonus = active_bonus_word; *bonus; bonus++) {
+    if (!to_highlight--) {
+      *active_font = 7;  // Bonus, plain
+    }
+    buf[0] = *bonus;
+    render_text((void *)0x030012bc, x_pos, 0x8e, buf);
+    x_pos += string_render_width(buf) + 1;
+  }
+}
