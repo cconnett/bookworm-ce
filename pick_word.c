@@ -87,7 +87,9 @@ restart:
     start_of_level = point;
   }
   if ((out_word[0] == 'R' && out_word[1] == 'A' && out_word[2] == 'P' &&
-       out_word[3] == 'E') ||
+       ((out_word[3] == 'E') ||
+        (out_word[3] == 'I' && out_word[4] == 'N' && out_word[5] == 'G') ||
+        (out_word[3] == 'I' && out_word[4] == 'S' && out_word[5] == 'T'))) ||
       (out_word[0] == 'F' && out_word[1] == 'A' && out_word[2] == 'G')) {
     goto restart;
   }
@@ -144,7 +146,6 @@ int pick_length(int bonus_words_completed) {
   int length;
   for (length = 3; length < 7 && roll >= BETA_BINOMIAL_PMF_TABLE[k][length - 3];
        roll -= BETA_BINOMIAL_PMF_TABLE[k][length++ - 3]);
-  //*((int *)0x03002af4) = 1;
   return length;
 }
 
