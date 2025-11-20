@@ -23,6 +23,8 @@ rom[0x3EFFF0:0x3F0000] = (
     b"\x27\x8b\xf0\xea"  # b ValidateWordReturn
 )
 
+# https://docs.google.com/spreadsheets/d/1_JGa1Nj5aarvxWXWl65aEz502gCaK_dBoGeBZOwkKQw/edit?usp=sharing
+# describes the method used to arrive at these new relative letter frequencies.
 new_letter_frequency_table = [
     8173,
     2216,
